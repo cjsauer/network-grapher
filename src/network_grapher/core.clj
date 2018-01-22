@@ -1,6 +1,7 @@
 (ns network-grapher.core
   (:gen-class)
-  (:require [clj-http.client :as client]))
+  (:require [clj-http.client :as client]
+            [clojure.pprint :refer [pprint]]))
 
 (def log-file "network-log.edn")
 
@@ -35,7 +36,7 @@
   [f o]
   (let [log (read-log f)
         new-log (conj log o)]
-    (spit f (pr-str new-log))))
+    (spit f (with-out-str (pprint new-log)))))
 
 (comment
 
@@ -63,6 +64,12 @@
 
 (defn -main
   [file & urls]
+  (println "network-grapher started with urls:")
+  (pprint urls)
+  (println (format "Check %s for output" file))
+  (println "Starting to poll the network...")
   (while true
     (conj-log! file (time-requests-blocking urls))
+    (print ".")
+    (flush)
     (Thread/sleep 10000)))
